@@ -1,0 +1,779 @@
+library(utils)
+
+library(nnet)
+## Warning: package 'nnet' was built under R version 4.2.3
+library(ggplot2)
+## Warning: package 'ggplot2' was built under R version 4.2.3
+library(car)
+## Warning: package 'car' was built under R version 4.2.3
+## Loading required package: carData
+library(caTools)
+## Warning: package 'caTools' was built under R version 4.2.3
+library(caret)
+## Warning: package 'caret' was built under R version 4.2.3
+## Loading required package: lattice
+## Warning: package 'lattice' was built under R version 4.2.3
+library(dplyr)
+## Warning: package 'dplyr' was built under R version 4.2.3
+## 
+## Attaching package: 'dplyr'
+## The following object is masked from 'package:car':
+## 
+##     recode
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
+library(lattice)
+library(ggrepel)
+library(mice)
+## 
+## Attaching package: 'mice'
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## The following objects are masked from 'package:base':
+## 
+##     cbind, rbind
+library(faraway)
+## 
+## Attaching package: 'faraway'
+## The following object is masked from 'package:mice':
+## 
+##     mammalsleep
+## The following object is masked from 'package:lattice':
+## 
+##     melanoma
+## The following objects are masked from 'package:car':
+## 
+##     logit, vif
+library(corrplot)
+## corrplot 0.92 loaded
+library(reshape)
+## 
+## Attaching package: 'reshape'
+## The following object is masked from 'package:dplyr':
+## 
+##     rename
+library(faraway)
+library(corrplot)
+library(magrittr)
+library(leaflet)
+## Warning: package 'leaflet' was built under R version 4.2.3
+library(dplyr)
+library(leaflet.extras)
+## Warning: package 'leaflet.extras' was built under R version 4.2.3
+library(tidyverse)
+## Warning: package 'tidyverse' was built under R version 4.2.3
+## Warning: package 'tibble' was built under R version 4.2.3
+## Warning: package 'readr' was built under R version 4.2.3
+## Warning: package 'forcats' was built under R version 4.2.3
+## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ lubridate 1.9.2     ✔ tibble    3.2.1
+## ✔ purrr     1.0.1     ✔ tidyr     1.3.0
+## ✔ readr     2.1.4
+## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+## ✖ tidyr::expand()    masks reshape::expand()
+## ✖ tidyr::extract()   masks magrittr::extract()
+## ✖ mice::filter()     masks dplyr::filter(), stats::filter()
+## ✖ dplyr::lag()       masks stats::lag()
+## ✖ purrr::lift()      masks caret::lift()
+## ✖ dplyr::recode()    masks car::recode()
+## ✖ reshape::rename()  masks dplyr::rename()
+## ✖ purrr::set_names() masks magrittr::set_names()
+## ✖ purrr::some()      masks car::some()
+## ✖ lubridate::stamp() masks reshape::stamp()
+## ℹ Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors
+library(lubridate)
+library(ggplot2)
+library(scales)
+## 
+## Attaching package: 'scales'
+## 
+## The following object is masked from 'package:purrr':
+## 
+##     discard
+## 
+## The following object is masked from 'package:readr':
+## 
+##     col_factor
+#############################LOADING OF DATA###################################
+
+list.files(path = "C:\\Users\\gaurav\\Desktop\\input")
+
+
+# Load the data set
+police_data <- read.csv("datavisu", header = TRUE)
+str(police_data)
+## 'data.frame':    2384 obs. of  47 variables:
+##  $ INCIDENT_DATE                               : chr  "OCCURRED_D" "9/3/16" "3/22/16" "5/22/16" ...
+##  $ INCIDENT_TIME                               : chr  "OCCURRED_T" "4:14:00 AM" "11:00:00 PM" "1:29:00 PM" ...
+##  $ UOF_NUMBER                                  : chr  "UOFNum" "37702" "33413" "34567" ...
+##  $ OFFICER_ID                                  : chr  "CURRENT_BA" "10810" "7706" "11014" ...
+##  $ OFFICER_GENDER                              : chr  "OffSex" "Male" "Male" "Male" ...
+##  $ OFFICER_RACE                                : chr  "OffRace" "Black" "White" "Black" ...
+##  $ OFFICER_HIRE_DATE                           : chr  "HIRE_DT" "5/7/14" "1/8/99" "5/20/15" ...
+##  $ OFFICER_YEARS_ON_FORCE                      : chr  "INCIDENT_DATE_LESS_" "2" "17" "1" ...
+##  $ OFFICER_INJURY                              : chr  "OFF_INJURE" "No" "Yes" "No" ...
+##  $ OFFICER_INJURY_TYPE                         : chr  "OFF_INJURE_DESC" "No injuries noted or visible" "Sprain/Strain" "No injuries noted or visible" ...
+##  $ OFFICER_HOSPITALIZATION                     : chr  "OFF_HOSPIT" "No" "Yes" "No" ...
+##  $ SUBJECT_ID                                  : chr  "CitNum" "46424" "44324" "45126" ...
+##  $ SUBJECT_RACE                                : chr  "CitRace" "Black" "Hispanic" "Hispanic" ...
+##  $ SUBJECT_GENDER                              : chr  "CitSex" "Female" "Male" "Male" ...
+##  $ SUBJECT_INJURY                              : chr  "CIT_INJURE" "Yes" "No" "No" ...
+##  $ SUBJECT_INJURY_TYPE                         : chr  "SUBJ_INJURE_DESC" "Non-Visible Injury/Pain" "No injuries noted or visible" "No injuries noted or visible" ...
+##  $ SUBJECT_WAS_ARRESTED                        : chr  "CIT_ARREST" "Yes" "Yes" "Yes" ...
+##  $ SUBJECT_DESCRIPTION                         : chr  "CIT_INFL_A" "Mentally unstable" "Mentally unstable" "Unknown" ...
+##  $ SUBJECT_OFFENSE                             : chr  "CitChargeT" "APOWW" "APOWW" "APOWW" ...
+##  $ REPORTING_AREA                              : chr  "RA" "2062" "1197" "4153" ...
+##  $ BEAT                                        : chr  "BEAT" "134" "237" "432" ...
+##  $ SECTOR                                      : chr  "SECTOR" "130" "230" "430" ...
+##  $ DIVISION                                    : chr  "DIVISION" "CENTRAL" "NORTHEAST" "SOUTHWEST" ...
+##  $ LOCATION_DISTRICT                           : chr  "DIST_NAME" "D14" "D9" "D6" ...
+##  $ STREET_NUMBER                               : chr  "STREET_N" "211" "7647" "716" ...
+##  $ STREET_NAME                                 : chr  "STREET" "Ervay" "Ferguson" "bimebella dr" ...
+##  $ STREET_DIRECTION                            : chr  "street_g" "N" "NULL" "NULL" ...
+##  $ STREET_TYPE                                 : chr  "street_t" "St." "Rd." "Ln." ...
+##  $ LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION: chr  "Street Address" "211 N ERVAY ST" "7647 FERGUSON RD" "716 BIMEBELLA LN" ...
+##  $ LOCATION_CITY                               : chr  "City" "Dallas" "Dallas" "Dallas" ...
+##  $ LOCATION_STATE                              : chr  "State" "TX" "TX" "TX" ...
+##  $ LOCATION_LATITUDE                           : chr  "Latitude" "32.782205" "32.798978" "32.73971" ...
+##  $ LOCATION_LONGITUDE                          : chr  "Longitude" "-96.797461" "-96.717493" "-96.92519" ...
+##  $ INCIDENT_REASON                             : chr  "SERVICE_TY" "Arrest" "Arrest" "Arrest" ...
+##  $ REASON_FOR_FORCE                            : chr  "UOF_REASON" "Arrest" "Arrest" "Arrest" ...
+##  $ TYPE_OF_FORCE_USED1                         : chr  "ForceType1" "Hand/Arm/Elbow Strike" "Joint Locks" "Take Down - Group" ...
+##  $ TYPE_OF_FORCE_USED2                         : chr  "ForceType2" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED3                         : chr  "ForceType3" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED4                         : chr  "ForceType4" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED5                         : chr  "ForceType5" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED6                         : chr  "ForceType6" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED7                         : chr  "ForceType7" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED8                         : chr  "ForceType8" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED9                         : chr  "ForceType9" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED10                        : chr  "ForceType10" "" "" "" ...
+##  $ NUMBER_EC_CYCLES                            : chr  "Cycles_Num" "NULL" "NULL" "NULL" ...
+##  $ FORCE_EFFECTIVE                             : chr  "ForceEffec" " Yes" " Yes" " Yes" ...
+# Summary of the data set
+summary(police_data)
+##  INCIDENT_DATE      INCIDENT_TIME       UOF_NUMBER         OFFICER_ID       
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_GENDER     OFFICER_RACE       OFFICER_HIRE_DATE 
+##  Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_YEARS_ON_FORCE OFFICER_INJURY     OFFICER_INJURY_TYPE
+##  Length:2384            Length:2384        Length:2384        
+##  Class :character       Class :character   Class :character   
+##  Mode  :character       Mode  :character   Mode  :character   
+##  OFFICER_HOSPITALIZATION  SUBJECT_ID        SUBJECT_RACE      
+##  Length:2384             Length:2384        Length:2384       
+##  Class :character        Class :character   Class :character  
+##  Mode  :character        Mode  :character   Mode  :character  
+##  SUBJECT_GENDER     SUBJECT_INJURY     SUBJECT_INJURY_TYPE SUBJECT_WAS_ARRESTED
+##  Length:2384        Length:2384        Length:2384         Length:2384         
+##  Class :character   Class :character   Class :character    Class :character    
+##  Mode  :character   Mode  :character   Mode  :character    Mode  :character    
+##  SUBJECT_DESCRIPTION SUBJECT_OFFENSE    REPORTING_AREA         BEAT          
+##  Length:2384         Length:2384        Length:2384        Length:2384       
+##  Class :character    Class :character   Class :character   Class :character  
+##  Mode  :character    Mode  :character   Mode  :character   Mode  :character  
+##     SECTOR            DIVISION         LOCATION_DISTRICT  STREET_NUMBER     
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  STREET_NAME        STREET_DIRECTION   STREET_TYPE       
+##  Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION LOCATION_CITY     
+##  Length:2384                                  Length:2384       
+##  Class :character                             Class :character  
+##  Mode  :character                             Mode  :character  
+##  LOCATION_STATE     LOCATION_LATITUDE  LOCATION_LONGITUDE INCIDENT_REASON   
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  REASON_FOR_FORCE   TYPE_OF_FORCE_USED1 TYPE_OF_FORCE_USED2 TYPE_OF_FORCE_USED3
+##  Length:2384        Length:2384         Length:2384         Length:2384        
+##  Class :character   Class :character    Class :character    Class :character   
+##  Mode  :character   Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED4 TYPE_OF_FORCE_USED5 TYPE_OF_FORCE_USED6
+##  Length:2384         Length:2384         Length:2384        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED7 TYPE_OF_FORCE_USED8 TYPE_OF_FORCE_USED9
+##  Length:2384         Length:2384         Length:2384        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED10 NUMBER_EC_CYCLES   FORCE_EFFECTIVE   
+##  Length:2384          Length:2384        Length:2384       
+##  Class :character     Class :character   Class :character  
+##  Mode  :character     Mode  :character   Mode  :character
+# Remove the second row which is not needed
+police_data <- police_data[-c(1),]
+
+# Task 1: Table/Two-way table
+table(police_data$INCIDENT_REASON)
+## 
+##  Accidental Discharge                Arrest        Call for Cover 
+##                     1                  1157                   131 
+##     Crime in Progress         Crowd Control                  NULL 
+##                    82                     5                    11 
+##   Off-Duty Employment     Off-Duty Incident Other ( In Narrative) 
+##                    51                    12                    70 
+##       Pedestrian Stop          Service Call   Suspicious Activity 
+##                    36                   673                    47 
+##          Traffic Stop     Warrant Execution 
+##                    93                    14
+table(police_data$OFFICER_RACE, police_data$SUBJECT_RACE)
+##               
+##                American Ind Asian Black Hispanic NULL Other White
+##   American Ind            0     0     7        0    0     0     1
+##   Asian                   0     0    28        9    1     0    17
+##   Black                   0     1   201       73    9     0    57
+##   Hispanic                1     0   230      138    7     2   104
+##   Other                   0     0    21        2    0     0     4
+##   White                   0     4   846      302   22     9   287
+table(police_data$SUBJECT_GENDER, police_data$SUBJECT_WAS_ARRESTED)
+##          
+##             No  Yes
+##   Female    62  378
+##   Male     271 1661
+##   NULL       2    8
+##   Unknown    0    1
+# Convert OFFICER_YEARS_ON_FORCE to numeric format
+police_data$INCIDENT_DATE <- as.Date(police_data$INCIDENT_DATE, format = "%Y-%m-%d")
+
+police_data$OFFICER_YEARS_ON_FORCE <- as.numeric(police_data$OFFICER_YEARS_ON_FORCE)
+
+# Create a histogram of the years of service of police officers
+hist(police_data$OFFICER_YEARS_ON_FORCE, 
+     main = "Histogram of Years of Service of Dallas Police Officers", 
+     xlab = "Years of Service",
+     col = "blue")
+
+
+# Create a density plot of the officer years on force
+plot(density(police_data$OFFICER_YEARS_ON_FORCE))
+
+
+# Create a boxplot of the officer years on force by officer race
+boxplot(OFFICER_YEARS_ON_FORCE ~ OFFICER_RACE, data = police_data)
+
+
+
+# Create pie chart
+ggplot(police_data, aes(x = "", fill = OFFICER_RACE)) +
+  geom_bar(width = 1) +
+  coord_polar(theta = "y") +
+  labs(title = "Distribution of Officer Race") +
+  theme_void()
+
+
+# Violin plot
+ggplot(police_data, aes(x = OFFICER_GENDER, y = OFFICER_YEARS_ON_FORCE)) +
+  geom_violin(fill = "#8FED8F") +
+  labs(title = "Officer Years on Force by Officer Race (Violin Plot)", 
+       x = "Officer Gender", 
+       y = "Years on Force")
+
+
+library(ggplot2)
+
+output <- suppressMessages({
+  ggplot(police_data, aes(x = OFFICER_GENDER, y = OFFICER_YEARS_ON_FORCE, fill = OFFICER_RACE)) +
+    geom_violin() +
+    labs(title = "Officer Years on Force by Officer Race and Gender (Violin Plot)", 
+         x = "Officer Gender", 
+         y = "Years on Force")
+})
+
+output
+
+
+
+# Strip plot (Sina plot)
+ggplot(police_data, aes(x = OFFICER_RACE, y = OFFICER_YEARS_ON_FORCE)) +
+  geom_jitter(alpha = 0.8, color = "#8FED8F") +
+  labs(title = "Officer Years on Force by Officer Race (Sina Plot)", 
+       x = "Officer Race", 
+       y = "Years on Force")
+
+
+# Create a scatter plot of officer years on force versus subject age
+plot(police_data$OFFICER_YEARS_ON_FORCE, police_data$SUBJECT_ID, xlab = "Officer Years on Force", ylab = "Subject Age")
+
+
+# Create a scatter plot
+plot(police_data$OFFICER_YEARS_ON_FORCE, police_data$SUBJECT_ID, 
+     xlab = "Officer Years on Force", ylab = "Subject Age", 
+     main = "Relationship between Officer Years on Force and Subject Age", 
+     cex = 1.2, asp = 1)
+
+# Customize the points
+points(police_data$OFFICER_YEARS_ON_FORCE, police_data$SUBJECT_ID, 
+       col = "blue", pch = 16)
+
+# Add a legend
+legend("topright", legend = c("Subjects"), col = "blue", pch = 16)
+
+# Create stacked bar chart
+ggplot(police_data, aes(x = police_data$INCIDENT_REASON, fill = police_data$TYPE_OF_FORCE_USED1)) +
+  geom_bar() +
+  labs(x = "Incident Reason", y = "Number of Incidents", fill = "Type of Force Used") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) # rotate x-axis labels for better readability
+
+
+# Violent crime rates by race
+violent_crime_count <- police_data %>%
+  filter(SUBJECT_OFFENSE == "Aggravated Assault" | SUBJECT_OFFENSE == "Robbery" | SUBJECT_OFFENSE == "Rape") %>%
+  group_by(SUBJECT_RACE) %>%
+  summarize(count = n())
+
+ggplot(violent_crime_count, aes(x = SUBJECT_RACE, y = count)) +
+  geom_bar(stat = "identity", fill = "#5c8fb3") +
+  labs(title = "Violent crime rate by race in Dallas, TX (2016)",
+       x = "Race",
+       y = "Number of violent crimes") +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+
+
+# Corelation analysis
+# Select only the numeric columns
+police_data <- read.csv('37-00049_UOF-P_2016_prepped.csv', header = TRUE)
+# Remove the second row which is not needed
+police_data <- police_data[-c(1),]
+
+
+data_filtered <- police_data %>% 
+  select(OFFICER_YEARS_ON_FORCE, SUBJECT_ID)
+
+# convert variables to numeric
+data_filtered$OFFICER_YEARS_ON_FORCE <- as.numeric(data_filtered$OFFICER_YEARS_ON_FORCE)
+data_filtered$SUBJECT_ID <- as.numeric(data_filtered$SUBJECT_ID)
+
+# check the data types of both variables
+class(data_filtered$OFFICER_YEARS_ON_FORCE)
+## [1] "numeric"
+class(data_filtered$SUBJECT_ID)
+## [1] "numeric"
+# calculate the correlation coefficient
+cor(data_filtered)
+##                        OFFICER_YEARS_ON_FORCE SUBJECT_ID
+## OFFICER_YEARS_ON_FORCE             1.00000000 0.01930746
+## SUBJECT_ID                         0.01930746 1.00000000
+################################################################# working code above ###################
+# Load the data set
+police_data <- read.csv('37-00049_UOF-P_2016_prepped.csv', header = TRUE)
+str(police_data)
+## 'data.frame':    2384 obs. of  47 variables:
+##  $ INCIDENT_DATE                               : chr  "OCCURRED_D" "9/3/16" "3/22/16" "5/22/16" ...
+##  $ INCIDENT_TIME                               : chr  "OCCURRED_T" "4:14:00 AM" "11:00:00 PM" "1:29:00 PM" ...
+##  $ UOF_NUMBER                                  : chr  "UOFNum" "37702" "33413" "34567" ...
+##  $ OFFICER_ID                                  : chr  "CURRENT_BA" "10810" "7706" "11014" ...
+##  $ OFFICER_GENDER                              : chr  "OffSex" "Male" "Male" "Male" ...
+##  $ OFFICER_RACE                                : chr  "OffRace" "Black" "White" "Black" ...
+##  $ OFFICER_HIRE_DATE                           : chr  "HIRE_DT" "5/7/14" "1/8/99" "5/20/15" ...
+##  $ OFFICER_YEARS_ON_FORCE                      : chr  "INCIDENT_DATE_LESS_" "2" "17" "1" ...
+##  $ OFFICER_INJURY                              : chr  "OFF_INJURE" "No" "Yes" "No" ...
+##  $ OFFICER_INJURY_TYPE                         : chr  "OFF_INJURE_DESC" "No injuries noted or visible" "Sprain/Strain" "No injuries noted or visible" ...
+##  $ OFFICER_HOSPITALIZATION                     : chr  "OFF_HOSPIT" "No" "Yes" "No" ...
+##  $ SUBJECT_ID                                  : chr  "CitNum" "46424" "44324" "45126" ...
+##  $ SUBJECT_RACE                                : chr  "CitRace" "Black" "Hispanic" "Hispanic" ...
+##  $ SUBJECT_GENDER                              : chr  "CitSex" "Female" "Male" "Male" ...
+##  $ SUBJECT_INJURY                              : chr  "CIT_INJURE" "Yes" "No" "No" ...
+##  $ SUBJECT_INJURY_TYPE                         : chr  "SUBJ_INJURE_DESC" "Non-Visible Injury/Pain" "No injuries noted or visible" "No injuries noted or visible" ...
+##  $ SUBJECT_WAS_ARRESTED                        : chr  "CIT_ARREST" "Yes" "Yes" "Yes" ...
+##  $ SUBJECT_DESCRIPTION                         : chr  "CIT_INFL_A" "Mentally unstable" "Mentally unstable" "Unknown" ...
+##  $ SUBJECT_OFFENSE                             : chr  "CitChargeT" "APOWW" "APOWW" "APOWW" ...
+##  $ REPORTING_AREA                              : chr  "RA" "2062" "1197" "4153" ...
+##  $ BEAT                                        : chr  "BEAT" "134" "237" "432" ...
+##  $ SECTOR                                      : chr  "SECTOR" "130" "230" "430" ...
+##  $ DIVISION                                    : chr  "DIVISION" "CENTRAL" "NORTHEAST" "SOUTHWEST" ...
+##  $ LOCATION_DISTRICT                           : chr  "DIST_NAME" "D14" "D9" "D6" ...
+##  $ STREET_NUMBER                               : chr  "STREET_N" "211" "7647" "716" ...
+##  $ STREET_NAME                                 : chr  "STREET" "Ervay" "Ferguson" "bimebella dr" ...
+##  $ STREET_DIRECTION                            : chr  "street_g" "N" "NULL" "NULL" ...
+##  $ STREET_TYPE                                 : chr  "street_t" "St." "Rd." "Ln." ...
+##  $ LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION: chr  "Street Address" "211 N ERVAY ST" "7647 FERGUSON RD" "716 BIMEBELLA LN" ...
+##  $ LOCATION_CITY                               : chr  "City" "Dallas" "Dallas" "Dallas" ...
+##  $ LOCATION_STATE                              : chr  "State" "TX" "TX" "TX" ...
+##  $ LOCATION_LATITUDE                           : chr  "Latitude" "32.782205" "32.798978" "32.73971" ...
+##  $ LOCATION_LONGITUDE                          : chr  "Longitude" "-96.797461" "-96.717493" "-96.92519" ...
+##  $ INCIDENT_REASON                             : chr  "SERVICE_TY" "Arrest" "Arrest" "Arrest" ...
+##  $ REASON_FOR_FORCE                            : chr  "UOF_REASON" "Arrest" "Arrest" "Arrest" ...
+##  $ TYPE_OF_FORCE_USED1                         : chr  "ForceType1" "Hand/Arm/Elbow Strike" "Joint Locks" "Take Down - Group" ...
+##  $ TYPE_OF_FORCE_USED2                         : chr  "ForceType2" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED3                         : chr  "ForceType3" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED4                         : chr  "ForceType4" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED5                         : chr  "ForceType5" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED6                         : chr  "ForceType6" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED7                         : chr  "ForceType7" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED8                         : chr  "ForceType8" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED9                         : chr  "ForceType9" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED10                        : chr  "ForceType10" "" "" "" ...
+##  $ NUMBER_EC_CYCLES                            : chr  "Cycles_Num" "NULL" "NULL" "NULL" ...
+##  $ FORCE_EFFECTIVE                             : chr  "ForceEffec" " Yes" " Yes" " Yes" ...
+summary(police_data)
+##  INCIDENT_DATE      INCIDENT_TIME       UOF_NUMBER         OFFICER_ID       
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_GENDER     OFFICER_RACE       OFFICER_HIRE_DATE 
+##  Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_YEARS_ON_FORCE OFFICER_INJURY     OFFICER_INJURY_TYPE
+##  Length:2384            Length:2384        Length:2384        
+##  Class :character       Class :character   Class :character   
+##  Mode  :character       Mode  :character   Mode  :character   
+##  OFFICER_HOSPITALIZATION  SUBJECT_ID        SUBJECT_RACE      
+##  Length:2384             Length:2384        Length:2384       
+##  Class :character        Class :character   Class :character  
+##  Mode  :character        Mode  :character   Mode  :character  
+##  SUBJECT_GENDER     SUBJECT_INJURY     SUBJECT_INJURY_TYPE SUBJECT_WAS_ARRESTED
+##  Length:2384        Length:2384        Length:2384         Length:2384         
+##  Class :character   Class :character   Class :character    Class :character    
+##  Mode  :character   Mode  :character   Mode  :character    Mode  :character    
+##  SUBJECT_DESCRIPTION SUBJECT_OFFENSE    REPORTING_AREA         BEAT          
+##  Length:2384         Length:2384        Length:2384        Length:2384       
+##  Class :character    Class :character   Class :character   Class :character  
+##  Mode  :character    Mode  :character   Mode  :character   Mode  :character  
+##     SECTOR            DIVISION         LOCATION_DISTRICT  STREET_NUMBER     
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  STREET_NAME        STREET_DIRECTION   STREET_TYPE       
+##  Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION LOCATION_CITY     
+##  Length:2384                                  Length:2384       
+##  Class :character                             Class :character  
+##  Mode  :character                             Mode  :character  
+##  LOCATION_STATE     LOCATION_LATITUDE  LOCATION_LONGITUDE INCIDENT_REASON   
+##  Length:2384        Length:2384        Length:2384        Length:2384       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  REASON_FOR_FORCE   TYPE_OF_FORCE_USED1 TYPE_OF_FORCE_USED2 TYPE_OF_FORCE_USED3
+##  Length:2384        Length:2384         Length:2384         Length:2384        
+##  Class :character   Class :character    Class :character    Class :character   
+##  Mode  :character   Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED4 TYPE_OF_FORCE_USED5 TYPE_OF_FORCE_USED6
+##  Length:2384         Length:2384         Length:2384        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED7 TYPE_OF_FORCE_USED8 TYPE_OF_FORCE_USED9
+##  Length:2384         Length:2384         Length:2384        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED10 NUMBER_EC_CYCLES   FORCE_EFFECTIVE   
+##  Length:2384          Length:2384        Length:2384       
+##  Class :character     Class :character   Class :character  
+##  Mode  :character     Mode  :character   Mode  :character
+police_data <- police_data[-c(1),]
+
+library(tidyverse)
+library(lubridate)
+library(ggplot2)
+library(scales)
+
+# Load the data
+
+# Explore the data
+str(police_data)
+## 'data.frame':    2383 obs. of  47 variables:
+##  $ INCIDENT_DATE                               : chr  "9/3/16" "3/22/16" "5/22/16" "1/10/16" ...
+##  $ INCIDENT_TIME                               : chr  "4:14:00 AM" "11:00:00 PM" "1:29:00 PM" "8:55:00 PM" ...
+##  $ UOF_NUMBER                                  : chr  "37702" "33413" "34567" "31460" ...
+##  $ OFFICER_ID                                  : chr  "10810" "7706" "11014" "6692" ...
+##  $ OFFICER_GENDER                              : chr  "Male" "Male" "Male" "Male" ...
+##  $ OFFICER_RACE                                : chr  "Black" "White" "Black" "Black" ...
+##  $ OFFICER_HIRE_DATE                           : chr  "5/7/14" "1/8/99" "5/20/15" "7/29/91" ...
+##  $ OFFICER_YEARS_ON_FORCE                      : chr  "2" "17" "1" "24" ...
+##  $ OFFICER_INJURY                              : chr  "No" "Yes" "No" "No" ...
+##  $ OFFICER_INJURY_TYPE                         : chr  "No injuries noted or visible" "Sprain/Strain" "No injuries noted or visible" "No injuries noted or visible" ...
+##  $ OFFICER_HOSPITALIZATION                     : chr  "No" "Yes" "No" "No" ...
+##  $ SUBJECT_ID                                  : chr  "46424" "44324" "45126" "43150" ...
+##  $ SUBJECT_RACE                                : chr  "Black" "Hispanic" "Hispanic" "Hispanic" ...
+##  $ SUBJECT_GENDER                              : chr  "Female" "Male" "Male" "Male" ...
+##  $ SUBJECT_INJURY                              : chr  "Yes" "No" "No" "Yes" ...
+##  $ SUBJECT_INJURY_TYPE                         : chr  "Non-Visible Injury/Pain" "No injuries noted or visible" "No injuries noted or visible" "Laceration/Cut" ...
+##  $ SUBJECT_WAS_ARRESTED                        : chr  "Yes" "Yes" "Yes" "Yes" ...
+##  $ SUBJECT_DESCRIPTION                         : chr  "Mentally unstable" "Mentally unstable" "Unknown" "FD-Unknown if Armed" ...
+##  $ SUBJECT_OFFENSE                             : chr  "APOWW" "APOWW" "APOWW" "Evading Arrest" ...
+##  $ REPORTING_AREA                              : chr  "2062" "1197" "4153" "4523" ...
+##  $ BEAT                                        : chr  "134" "237" "432" "641" ...
+##  $ SECTOR                                      : chr  "130" "230" "430" "640" ...
+##  $ DIVISION                                    : chr  "CENTRAL" "NORTHEAST" "SOUTHWEST" "NORTH CENTRAL" ...
+##  $ LOCATION_DISTRICT                           : chr  "D14" "D9" "D6" "D11" ...
+##  $ STREET_NUMBER                               : chr  "211" "7647" "716" "5600" ...
+##  $ STREET_NAME                                 : chr  "Ervay" "Ferguson" "bimebella dr" "LBJ" ...
+##  $ STREET_DIRECTION                            : chr  "N" "NULL" "NULL" "NULL" ...
+##  $ STREET_TYPE                                 : chr  "St." "Rd." "Ln." "Frwy." ...
+##  $ LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION: chr  "211 N ERVAY ST" "7647 FERGUSON RD" "716 BIMEBELLA LN" "5600 L B J FWY" ...
+##  $ LOCATION_CITY                               : chr  "Dallas" "Dallas" "Dallas" "Dallas" ...
+##  $ LOCATION_STATE                              : chr  "TX" "TX" "TX" "TX" ...
+##  $ LOCATION_LATITUDE                           : chr  "32.782205" "32.798978" "32.73971" "" ...
+##  $ LOCATION_LONGITUDE                          : chr  "-96.797461" "-96.717493" "-96.92519" "" ...
+##  $ INCIDENT_REASON                             : chr  "Arrest" "Arrest" "Arrest" "Arrest" ...
+##  $ REASON_FOR_FORCE                            : chr  "Arrest" "Arrest" "Arrest" "Arrest" ...
+##  $ TYPE_OF_FORCE_USED1                         : chr  "Hand/Arm/Elbow Strike" "Joint Locks" "Take Down - Group" "K-9 Deployment" ...
+##  $ TYPE_OF_FORCE_USED2                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED3                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED4                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED5                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED6                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED7                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED8                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED9                         : chr  "" "" "" "" ...
+##  $ TYPE_OF_FORCE_USED10                        : chr  "" "" "" "" ...
+##  $ NUMBER_EC_CYCLES                            : chr  "NULL" "NULL" "NULL" "NULL" ...
+##  $ FORCE_EFFECTIVE                             : chr  " Yes" " Yes" " Yes" " Yes" ...
+summary(police_data)
+##  INCIDENT_DATE      INCIDENT_TIME       UOF_NUMBER         OFFICER_ID       
+##  Length:2383        Length:2383        Length:2383        Length:2383       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_GENDER     OFFICER_RACE       OFFICER_HIRE_DATE 
+##  Length:2383        Length:2383        Length:2383       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  OFFICER_YEARS_ON_FORCE OFFICER_INJURY     OFFICER_INJURY_TYPE
+##  Length:2383            Length:2383        Length:2383        
+##  Class :character       Class :character   Class :character   
+##  Mode  :character       Mode  :character   Mode  :character   
+##  OFFICER_HOSPITALIZATION  SUBJECT_ID        SUBJECT_RACE      
+##  Length:2383             Length:2383        Length:2383       
+##  Class :character        Class :character   Class :character  
+##  Mode  :character        Mode  :character   Mode  :character  
+##  SUBJECT_GENDER     SUBJECT_INJURY     SUBJECT_INJURY_TYPE SUBJECT_WAS_ARRESTED
+##  Length:2383        Length:2383        Length:2383         Length:2383         
+##  Class :character   Class :character   Class :character    Class :character    
+##  Mode  :character   Mode  :character   Mode  :character    Mode  :character    
+##  SUBJECT_DESCRIPTION SUBJECT_OFFENSE    REPORTING_AREA         BEAT          
+##  Length:2383         Length:2383        Length:2383        Length:2383       
+##  Class :character    Class :character   Class :character   Class :character  
+##  Mode  :character    Mode  :character   Mode  :character   Mode  :character  
+##     SECTOR            DIVISION         LOCATION_DISTRICT  STREET_NUMBER     
+##  Length:2383        Length:2383        Length:2383        Length:2383       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  STREET_NAME        STREET_DIRECTION   STREET_TYPE       
+##  Length:2383        Length:2383        Length:2383       
+##  Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character  
+##  LOCATION_FULL_STREET_ADDRESS_OR_INTERSECTION LOCATION_CITY     
+##  Length:2383                                  Length:2383       
+##  Class :character                             Class :character  
+##  Mode  :character                             Mode  :character  
+##  LOCATION_STATE     LOCATION_LATITUDE  LOCATION_LONGITUDE INCIDENT_REASON   
+##  Length:2383        Length:2383        Length:2383        Length:2383       
+##  Class :character   Class :character   Class :character   Class :character  
+##  Mode  :character   Mode  :character   Mode  :character   Mode  :character  
+##  REASON_FOR_FORCE   TYPE_OF_FORCE_USED1 TYPE_OF_FORCE_USED2 TYPE_OF_FORCE_USED3
+##  Length:2383        Length:2383         Length:2383         Length:2383        
+##  Class :character   Class :character    Class :character    Class :character   
+##  Mode  :character   Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED4 TYPE_OF_FORCE_USED5 TYPE_OF_FORCE_USED6
+##  Length:2383         Length:2383         Length:2383        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED7 TYPE_OF_FORCE_USED8 TYPE_OF_FORCE_USED9
+##  Length:2383         Length:2383         Length:2383        
+##  Class :character    Class :character    Class :character   
+##  Mode  :character    Mode  :character    Mode  :character   
+##  TYPE_OF_FORCE_USED10 NUMBER_EC_CYCLES   FORCE_EFFECTIVE   
+##  Length:2383          Length:2383        Length:2383       
+##  Class :character     Class :character   Class :character  
+##  Mode  :character     Mode  :character   Mode  :character
+police_data <- police_data[-c(1),]
+
+# Clean and prepare the data
+police_data$INCIDENT_DATE <- as.Date(police_data$INCIDENT_DATE, "%m/%d/%Y") # Convert date column to date format
+police_data$tyearofcrime <- year(police_data$INCIDENT_DATE)
+
+police_data$INCIDENT_TIME <- hour(hms(police_data$INCIDENT_TIME)) # Extract hour from time column
+## Warning in .parse_hms(..., order = "HMS", quiet = quiet): Some strings failed
+## to parse, or all strings are NAs
+police_data$INCIDENT_DATE <- weekdays(police_data$INCIDENT_DATE) # Extract day of week from date column
+#police_data$tyearofcrime <- year(as.Date(police_data$INCIDENT_DATE))
+
+
+
+# Analyze the data
+# Crime rates by hour of day
+# Analyze the data
+# Crime rates by hour of day
+hourly_crime_count <- police_data %>%
+  group_by(INCIDENT_TIME) %>%
+  summarize(count = n()) %>%
+  mutate(INCIDENT_TIME = factor(INCIDENT_TIME, levels = 0:23, labels = sprintf("%02d:00", 0:23))) # Sort hour in chronological order
+
+# Create a bar plot
+p <- ggplot(hourly_crime_count, aes(x = INCIDENT_TIME, y = count)) +
+  geom_bar(stat = "identity", fill = "#5c8fb3") +
+  labs(title = "Hourly crime rate in Dallas, TX (2016)",
+       x = "Hour of day",
+       y = "Number of crimes") +
+  scale_x_discrete(limits = sprintf("%02d:00", 0:23), labels = sprintf("%02d:00", 0:23)) +
+  theme_minimal()
+
+
+print(p)
+## Warning: Removed 1 rows containing missing values (`position_stack()`).
+
+
+
+# Crime rates by day of week
+daily_crime_count <- police_data %>%
+  group_by(INCIDENT_DATE) %>%
+  summarize(countcrime = n())
+
+q <- ggplot(daily_crime_count, aes(x = INCIDENT_DATE, y = countcrime)) +
+  geom_bar(stat = "identity", fill = "#5c8fb3") +
+  labs(title = "Daily crime rate in Dallas, TX (2016)",
+       x = "Day of week",
+       y = "Number of crimes") +
+  scale_x_discrete(limits = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"), labels = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")) +
+  theme_minimal()
+print(q)
+
+
+
+library(leaflet)
+library(dplyr)
+
+# Load the Dallas police data
+police_data <- read.csv("37-00049_UOF-P_2016_prepped.csv")
+police_data <- police_data[-c(1),]
+
+# Filter the data to include only the columns of interest
+data_filtered <- police_data %>% 
+  select(INCIDENT_DATE, INCIDENT_TIME, LOCATION_LATITUDE, LOCATION_LONGITUDE)
+
+# Convert the latitude and longitude columns to numeric format
+data_filtered$LOCATION_LATITUDE <- as.numeric(data_filtered$LOCATION_LATITUDE)
+data_filtered$LOCATION_LONGITUDE <- as.numeric(data_filtered$LOCATION_LONGITUDE)
+
+
+# Create a leaflet map
+m <- leaflet() %>%
+  addTiles() %>%
+  setView(lng = -96.7969, lat = 32.7767, zoom = 10)
+
+# Add a heatmap layer to the map
+m %>% 
+  addHeatmap(data = data_filtered, 
+             lat = ~LOCATION_LATITUDE, 
+             lng = ~LOCATION_LONGITUDE, 
+             radius = 10)
+## Warning in validateCoords(lng, lat, funcName): Data contains 55 rows with
+## either missing or invalid lat/lon values and will be ignored
+
+
+
+# Add a marker cluster layer to display the individual heatmap points
+m %>% 
+  addMarkers(data = data_filtered, 
+             lat = ~LOCATION_LATITUDE, 
+             lng = ~LOCATION_LONGITUDE, 
+             clusterOptions = markerClusterOptions())
+## Warning in validateCoords(lng, lat, funcName): Data contains 55 rows with
+## either missing or invalid lat/lon values and will be ignored
+
+
+# Display the map
+print(m)
+library(ggplot2)
+
+# Load the data
+police_data <- read.csv("37-00049_UOF-P_2016_prepped.csv", stringsAsFactors = FALSE)
+
+# Convert the incident date column to a date format
+police_data$INCIDENT_DATE <- as.Date(police_data$INCIDENT_DATE, format = "%m/%d/%Y")
+
+# Create a time series chart of the incident dates
+timeseries1 <- ggplot(police_data, aes(x = INCIDENT_DATE)) +
+  geom_histogram(binwidth = 30, color = "white", fill = "#5c8fb3") +
+  labs(title = "Number of Police Incidents in Dallas, TX (2016)",
+       x = "Date",
+       y = "Count") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  theme_minimal()
+
+print(timeseries1)
+## Warning: Removed 1 rows containing non-finite values (`stat_bin()`).
+
+
+
+# Smoothed time series of crime rate
+daily_crime_count_smooth <- police_data %>%
+  group_by(INCIDENT_DATE) %>%
+  summarize(count = n()) %>%
+  mutate(smoothed_count = zoo::rollmean(count, k = 30, fill = NA, align = "center", na.pad = TRUE))
+
+ggplot(daily_crime_count_smooth, aes(x = INCIDENT_DATE, y = smoothed_count)) +
+  geom_line(color = "#5c8fb3") +
+  labs(title = "Smoothed daily crime rate in Dallas, TX (2016)",
+       x = "INCIDENT_DATE",
+       y = "Number of crimes") +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b %Y") +
+  scale_y_continuous(labels = comma) +
+  theme_minimal()
+## Warning: Removed 29 rows containing missing values (`geom_line()`).
+
+
+
+library(tidyverse)
+library(plotly)
+## Warning: package 'plotly' was built under R version 4.2.3
+## 
+## Attaching package: 'plotly'
+## The following object is masked from 'package:reshape':
+## 
+##     rename
+## The following object is masked from 'package:ggplot2':
+## 
+##     last_plot
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## The following object is masked from 'package:graphics':
+## 
+##     layout
+# Read in the data
+dallas_police <- read_csv("37-00049_UOF-P_2016_prepped.csv")
+## Rows: 2384 Columns: 47
+## ── Column specification ────────────────────────────────────────────────────────
+## Delimiter: ","
+## chr (47): INCIDENT_DATE, INCIDENT_TIME, UOF_NUMBER, OFFICER_ID, OFFICER_GEND...
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+# Convert the date and time columns to datetime objects
+dallas_police$INCIDENT_DATE <- as.Date(dallas_police$INCIDENT_DATE, format = "%m/%d/%Y")
+dallas_police$INCIDENT_TIME <- as.POSIXct(dallas_police$INCIDENT_TIME, format = "%H:%M:%S")
+
+# Create a scatter plot of incidents by date and time
+plot_data <- dallas_police %>%
+  ggplot(aes(x = INCIDENT_DATE, y = INCIDENT_TIME, color = SUBJECT_RACE)) +
+  geom_point(alpha = 0.7) +
+  scale_color_manual(values = c("white", "orange", "blue", "red", "yellow", "green", "purple", "black")) +
+  labs(title = "Dallas Police Incidents by Date and Time",
+       x = "Date",
+       y = "Time",
+       color = "Subject Race") +
+  theme_bw()
+
+# Convert the plot to an interactive plot using plotly
+plot_data <- ggplotly(plot_data)
+
+# Display the plot
+plot_data
